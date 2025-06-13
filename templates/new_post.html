@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <div class="new-post">
+        <h2>Create a New Post</h2>
+        <form action="{{ url_for('new_post') }}" method="POST" enctype="multipart/form-data">
+            <div class="form-group">
+                <label for="content">What's on your mind?</label>
+                <textarea name="content" id="content" rows="4" required></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label for="media_type">What would you like to share?</label>
+                <select name="media_type" id="media_type" required>
+                    <option value="image">A Picture</option>
+                    <option value="voice">A Voice Note</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="media">Choose your file:</label>
+                <input type="file" name="media" id="media" accept="image/*,audio/*" required>
+            </div>
+            
+            <button type="submit">Share with Friends!</button>
+        </form>
+    </div>
+
+    <style>
+        .new-post {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #4a90e2;
+            border-radius: 8px;
+            font-family: 'Comic Neue', cursive;
+            font-size: 1em;
+        }
+        input[type="file"] {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #4a90e2;
+            border-radius: 8px;
+            background-color: white;
+        }
+    </style>
+{% endblock %} 
