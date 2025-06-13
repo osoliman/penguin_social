@@ -7,10 +7,19 @@ import secrets
 app = Flask(__name__)
 app.config['SECRET_KEY'] = secrets.token_hex(16)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///penguin_social.db'
-app.config['UPLOAD_FOLDER'] = 'static/uploads'
+
+# Update the upload folder path to be absolute
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+app.config['UPLOAD_FOLDER'] = os.path.join(BASE_DIR, 'static', 'uploads')
 
 # Create upload folder if it doesn't exist
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+
+# Ensure the uploads directory is writable
+try:
+    os.chmod(app.config['UPLOAD_FOLDER'], 0o777)
+except:
+    pass  # Ignore if we can't change permissions
 
 db = SQLAlchemy(app)
 
@@ -52,9 +61,20 @@ def new_post():
             return redirect(request.url)
             
         if file:
+            # Create a safe filename
             filename = f"{datetime.now().strftime('%Y%m%d_%H%M%S')}_{file.filename}"
+            # Ensure the filename is safe
+            filename = ''.join(c for c in filename if c.isalnum() or c in '._-')
+            
+            # Save the file
             file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
             file.save(file_path)
+            
+            # Ensure the file is readable
+            try:
+                os.chmod(file_path, 0o644)
+            except:
+                pass  # Ignore if we can't change permissions
             
             post = Post(
                 content=content,
