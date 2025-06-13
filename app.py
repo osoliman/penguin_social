@@ -43,8 +43,10 @@ class Comment(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     post_id = db.Column(db.Integer, db.ForeignKey('post.id'), nullable=False)
 
+# Create all database tables
 with app.app_context():
-    db.create_all()
+    db.drop_all()  # Drop all existing tables
+    db.create_all()  # Create new tables
 
 @app.route('/')
 def home():
