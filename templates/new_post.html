@@ -11,15 +11,16 @@
             
             <div class="form-group">
                 <label for="media_type">What would you like to share?</label>
-                <select name="media_type" id="media_type" required>
-                    <option value="image">A Picture</option>
-                    <option value="voice">A Voice Note</option>
+                <select name="media_type" id="media_type" required onchange="updateFileInput()">
+                    <option value="image">A Picture (PNG, JPG, JPEG, GIF)</option>
+                    <option value="voice">A Voice Note (MP3, WAV, OGG, M4A)</option>
                 </select>
             </div>
             
             <div class="form-group">
                 <label for="media">Choose your file:</label>
                 <input type="file" name="media" id="media" accept="image/*,audio/*" required>
+                <small class="file-help">Allowed formats: <span id="allowed-formats">PNG, JPG, JPEG, GIF</span></small>
             </div>
             
             <button type="submit">Share with Friends!</button>
@@ -54,5 +55,27 @@
             border-radius: 8px;
             background-color: white;
         }
+        .file-help {
+            display: block;
+            margin-top: 5px;
+            color: #666;
+            font-size: 0.9em;
+        }
     </style>
+
+    <script>
+        function updateFileInput() {
+            const mediaType = document.getElementById('media_type').value;
+            const fileInput = document.getElementById('media');
+            const allowedFormats = document.getElementById('allowed-formats');
+            
+            if (mediaType === 'voice') {
+                fileInput.accept = 'audio/*';
+                allowedFormats.textContent = 'MP3, WAV, OGG, M4A';
+            } else {
+                fileInput.accept = 'image/*';
+                allowedFormats.textContent = 'PNG, JPG, JPEG, GIF';
+            }
+        }
+    </script>
 {% endblock %} 

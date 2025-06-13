@@ -12,6 +12,14 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///penguin_social.db'
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 app.config['UPLOAD_FOLDER'] = os.path.join(BASE_DIR, 'static', 'uploads')
 
+# Allowed file extensions
+ALLOWED_IMAGE_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+ALLOWED_AUDIO_EXTENSIONS = {'mp3', 'wav', 'ogg', 'm4a'}
+
+def allowed_file(filename, media_type):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in (ALLOWED_AUDIO_EXTENSIONS if media_type == 'voice' else ALLOWED_IMAGE_EXTENSIONS)
+
 # Create upload folder if it doesn't exist
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
@@ -61,6 +69,13 @@ def new_post():
             return redirect(request.url)
             
         if file:
+            if not allowed_file(file.filename, media_type):
+                if media_type == 'voice':
+                    flash('Please upload an audio file (mp3, wav, ogg, or m4a)')
+                else:
+                    flash('Please upload an image file (png, jpg, jpeg, or gif)')
+                return redirect(request.url)
+            
             # Create a safe filename
             filename = f"{datetime.now().strftime('%Y%m%d_%H%M%S')}_{file.filename}"
             # Ensure the filename is safe
