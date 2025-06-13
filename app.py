@@ -14,11 +14,10 @@ app.config['UPLOAD_FOLDER'] = os.path.join(BASE_DIR, 'static', 'uploads')
 
 # Allowed file extensions
 ALLOWED_IMAGE_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
-ALLOWED_AUDIO_EXTENSIONS = {'mp3', 'wav', 'ogg', 'm4a'}
 
-def allowed_file(filename, media_type):
+def allowed_file(filename):
     return '.' in filename and \
-           filename.rsplit('.', 1)[1].lower() in (ALLOWED_AUDIO_EXTENSIONS if media_type == 'voice' else ALLOWED_IMAGE_EXTENSIONS)
+           filename.rsplit('.', 1)[1].lower() in ALLOWED_IMAGE_EXTENSIONS
 
 # Create upload folder if it doesn't exist
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
@@ -34,8 +33,7 @@ db = SQLAlchemy(app)
 class Post(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     content = db.Column(db.String(500))
-    media_type = db.Column(db.String(10))  # 'image' or 'voice'
-    media_path = db.Column(db.String(200))
+    image_path = db.Column(db.String(200))
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     comments = db.relationship('Comment', backref='post', lazy=True, cascade='all, delete-orphan')
 
@@ -57,23 +55,19 @@ def home():
 def new_post():
     if request.method == 'POST':
         content = request.form.get('content')
-        media_type = request.form.get('media_type')
         
-        if 'media' not in request.files:
-            flash('No file selected')
+        if 'image' not in request.files:
+            flash('No image selected')
             return redirect(request.url)
             
-        file = request.files['media']
+        file = request.files['image']
         if file.filename == '':
-            flash('No file selected')
+            flash('No image selected')
             return redirect(request.url)
             
         if file:
-            if not allowed_file(file.filename, media_type):
-                if media_type == 'voice':
-                    flash('Please upload an audio file (mp3, wav, ogg, or m4a)')
-                else:
-                    flash('Please upload an image file (png, jpg, jpeg, or gif)')
+            if not allowed_file(file.filename):
+                flash('Please upload an image file (png, jpg, jpeg, or gif)')
                 return redirect(request.url)
             
             # Create a safe filename
@@ -93,8 +87,7 @@ def new_post():
             
             post = Post(
                 content=content,
-                media_type=media_type,
-                media_path=filename
+                image_path=filename
             )
             db.session.add(post)
             db.session.commit()
@@ -117,8 +110,8 @@ def delete_post(post_id):
     post = Post.query.get_or_404(post_id)
     
     # Delete the associated file
-    if post.media_path:
-        file_path = os.path.join(app.config['UPLOAD_FOLDER'], post.media_path)
+    if post.image_path:
+        file_path = os.path.join(app.config['UPLOAD_FOLDER'], post.image_path)
         try:
             if os.path.exists(file_path):
                 os.remove(file_path)

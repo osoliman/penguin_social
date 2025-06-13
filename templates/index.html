@@ -19,14 +19,9 @@
                     {{ post.content }}
                 </div>
                 
-                {% if post.media_type == 'image' %}
-                    <img src="{{ url_for('static', filename='uploads/' + post.media_path) }}" 
+                {% if post.image_path %}
+                    <img src="{{ url_for('static', filename='uploads/' + post.image_path) }}" 
                          alt="Posted image" class="post-media">
-                {% elif post.media_type == 'voice' %}
-                    <audio controls class="post-media">
-                        <source src="{{ url_for('static', filename='uploads/' + post.media_path) }}" type="audio/mpeg">
-                        Your browser does not support the audio element.
-                    </audio>
                 {% endif %}
                 
                 <div class="comments">
