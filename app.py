@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, flash
+from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 import os
@@ -29,7 +29,7 @@ class Post(db.Model):
     media_type = db.Column(db.String(10))  # 'image' or 'voice'
     media_path = db.Column(db.String(200))
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    comments = db.relationship('Comment', backref='post', lazy=True)
+    comments = db.relationship('Comment', backref='post', lazy=True, cascade='all, delete-orphan')
 
 class Comment(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -95,6 +95,26 @@ def add_comment(post_id):
         comment = Comment(content=content, post_id=post_id)
         db.session.add(comment)
         db.session.commit()
+    return redirect(url_for('home'))
+
+@app.route('/post/<int:post_id>/delete', methods=['POST'])
+def delete_post(post_id):
+    post = Post.query.get_or_404(post_id)
+    
+    # Delete the associated file
+    if post.media_path:
+        file_path = os.path.join(app.config['UPLOAD_FOLDER'], post.media_path)
+        try:
+            if os.path.exists(file_path):
+                os.remove(file_path)
+        except:
+            pass  # Ignore if we can't delete the file
+    
+    # Delete the post and its comments
+    db.session.delete(post)
+    db.session.commit()
+    
+    flash('Post deleted successfully!')
     return redirect(url_for('home'))
 
 # This is the application factory for PythonAnywhere
