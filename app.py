@@ -77,5 +77,8 @@ def add_comment(post_id):
         db.session.commit()
     return redirect(url_for('home'))
 
+# This is the application factory for PythonAnywhere
+application = app
+
 if __name__ == '__main__':
-    app.run(debug=True) 
+    app.run() 
